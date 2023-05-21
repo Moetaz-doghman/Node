@@ -1,45 +1,36 @@
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const bodyParser = require('body-parser')
+const express = require('express')
+const  mongoose  = require('mongoose')
+const app = express()
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
-var osrouter = require('./routes/os')
-var productRouter = require('./routes/products')
-
-var app = express();
-
-// view engine setup
+// importer twig 
+const path = require('path');
+const twig = require('twig');
+app.set('view engine', 'twig');
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+// importer database
+const configDB = require('./mongodb.json');
 
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+// import routes
+const contact = require('./routes/contacts')
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
-app.use('/os', osrouter);
-app.use('/products', productRouter);
+// MIDDELWARE
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: false }));
+//use
+app.use('/contact', contact);
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
-});
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
 
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
-});
 
-module.exports = app;
+// connect  database 
+mongoose.connect("mongodb://127.0.0.1:27017/contactTest", { useNewUrlParser: true, useUnifiedTopology: true  })
+.then(() => {
+console.log('Connected successfully to MongoDB server');
+// Perform database operations here
+})
+.catch((err) => console.error(err));
+
+app.listen(3000,()=> {
+    console.log("on port 3000!!")
+})
